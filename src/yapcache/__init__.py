@@ -38,10 +38,6 @@ def memoize(
 
             async def _call_with_lock():
                 async with lock(key + ":lock"):
-                    found = await cache.get(key)
-                    if isinstance(found, CacheItem):
-                        return found.value
-
                     result = await fn(*args, **kwargs)
 
                     await cache.set(
