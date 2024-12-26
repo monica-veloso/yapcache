@@ -38,6 +38,10 @@ def memoize(
 
             async def _call_with_lock():
                 async with lock(key + ":lock"):
+                    found = await cache.get(key)   # did someone populate the cache while I was waiting for the lock?
+                    if isinstance(found, CacheItem) and not found.is_stale:
+                        return found.value
+
                     result = await fn(*args, **kwargs)
 
                     await cache.set(
