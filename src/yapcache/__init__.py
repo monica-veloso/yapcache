@@ -24,7 +24,7 @@ def memoize(
     cache: Cache,
     cache_key: Callable[P, str],
     ttl: float | Callable[Concatenate[R, P], float],
-    best_before: Callable[Concatenate[R, P], Optional[float]] = lambda *a, **kw: None,
+    best_before: Callable[Concatenate[R, P], Optional[float]] = lambda _, *a, **kw: None,
     lock: Callable[[str], DistLock] = lambda *a, **kw: NullLock(),
 ) -> Callable[
     [Callable[P, Coroutine[Any, Any, R]]], Callable[P, Coroutine[Any, Any, R]]
