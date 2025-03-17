@@ -59,7 +59,7 @@ class MultiLayerCache(Cache):
         if not isinstance(found, NotFound):
             await asyncio.gather(
                 *(
-                    cache.set(key, found.value, found.ttl)
+                    cache.set(key, found.value, found.ttl, found.best_before)
                     for cache in self.caches[:index]
                 )
             )
