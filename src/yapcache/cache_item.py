@@ -20,7 +20,7 @@ class CacheItem:
     @property
     def is_stale(self):
         if self.best_before is None:
-            return False
+            return True
         return time.time() > self.best_before
 
 
