@@ -51,11 +51,10 @@ class RedisDistLock(DistLock):
         self.timeout = timeout
         self.delay_interval = delay_interval
         self.lease_time = lease_time
-        self.lock_id = ""
+        self.lock_id = str(uuid.uuid4())
 
     @override
     async def acquire(self):
-        self.lock_id = str(uuid.uuid4())
         try:
             await asyncio.wait_for(self._acquire(), timeout=self.lease_time)
         except asyncio.TimeoutError:
@@ -63,19 +62,22 @@ class RedisDistLock(DistLock):
 
     async def _acquire(self):
         while True:
+            new_event = asyncio.Event()
+            event = RedisDistLock._EVENTS.setdefault(self.resource_name, new_event)
+            # If an event already exists for this resource, another coroutine is attempting to acquire or
+            # have acquired the lock, so wait for that coroutine to finish
+            if event != new_event:
+                await event.wait()
+
             acquired = await self.client.set(
                 self.resource_name, self.lock_id, nx=True, px=self.timeout * 1000
             )
-            RedisDistLock._EVENTS[self.resource_name] = asyncio.Event()
             if acquired:
                 return self
 
             # another coroutine in the same thread finished or `delay_interval` passed.
             try:
-                await asyncio.wait_for(
-                    RedisDistLock._EVENTS[self.resource_name].wait(),
-                    timeout=self.delay_interval,
-                )
+                await asyncio.wait_for(event.wait(), timeout=self.delay_interval)
             except asyncio.TimeoutError:
                 ...
 
