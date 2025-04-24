@@ -87,4 +87,7 @@ class RedisDistLock(DistLock):
             self.RELEASE_LOCK_SCRIPT, 1, self.resource_name, self.lock_id
         )  # type: ignore
         if released:
-            RedisDistLock._EVENTS.pop(self.resource_name).set()
+            try:
+                RedisDistLock._EVENTS.pop(self.resource_name).set()
+            except KeyError:
+                ...
