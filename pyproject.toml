@@ -31,7 +31,13 @@ Source = "https://github.com/ecarrara/yapcache"
 path = "src/yapcache/__about__.py"
 
 [tool.hatch.envs.default]
-dependencies = ["coverage[toml]>=6.5", "pytest", "ruff", "pyright"]
+dependencies = [
+    "coverage[toml]>=6.5",
+    "pytest",
+    "ruff",
+    "pyright",
+    "pytest-asyncio",
+]
 
 [tool.hatch.envs.default.scripts]
 test = "pytest {args:tests}"
