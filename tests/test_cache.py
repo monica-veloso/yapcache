@@ -1,4 +1,3 @@
-import os
 import pytest
 from yapcache.caches.memory import InMemoryCache
 from yapcache.caches.redis import RedisCache
@@ -15,7 +14,7 @@ async def test_cache_multilayer_redis_and_memory():
     value = 42
     ttl = 60
 
-    redis_client = Redis(host=os.getenv("REDIS_HOST", "localhost"))
+    redis_client = Redis()
     redis_cache = RedisCache(redis_client)
 
     cache = MultiLayerCache(caches=[redis_cache, memory_cache])

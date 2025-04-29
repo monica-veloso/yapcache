@@ -35,8 +35,6 @@ jobs:
 
       - name: Tests
         run: hatch run test
-        env:
-          REDIS_HOST: redis
 
   build:
     name: Build package
