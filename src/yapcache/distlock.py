@@ -61,8 +61,8 @@ class RedisDistLock(DistLock):
             ...
 
     async def _acquire(self):
+        new_event = asyncio.Event()
         while True:
-            new_event = asyncio.Event()
             event = RedisDistLock._EVENTS.setdefault(self.resource_name, new_event)
             # If an event already exists for this resource, another coroutine is attempting to acquire or
             # have acquired the lock, so wait for that coroutine to finish
