@@ -29,8 +29,11 @@ class NullLock(DistLock):
 
 class RedisDistLock(DistLock):
     RELEASE_LOCK_SCRIPT = """
-    if redis.call("get", KEYS[1]) == ARGV[1] then
-        return redis.call("del", KEYS[1])
+    if redis.call("get", KEYS[1]) == false then
+        return 1
+    elseif redis.call("get", KEYS[1]) == ARGV[1] then
+        redis.call("del", KEYS[1])
+        return 1
     else
         return 0
     end
