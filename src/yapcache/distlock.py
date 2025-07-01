@@ -3,6 +3,13 @@ import uuid
 
 from redis.asyncio import Redis
 from typing_extensions import override
+from compat import StrEnum
+
+
+class ReleasedLock(StrEnum):
+    RELEASED = "released"
+    NOT_FOUND = "not_found"
+    UNMATCH = "unmatch"
 
 
 class DistLock:
@@ -28,11 +35,14 @@ class NullLock(DistLock):
 
 
 class RedisDistLock(DistLock):
-    RELEASE_LOCK_SCRIPT = """
-    if redis.call("get", KEYS[1]) == ARGV[1] then
-        return redis.call("del", KEYS[1])
+    RELEASE_LOCK_SCRIPT = f"""
+    if redis.call("get", KEYS[1]) == false then
+        return {ReleasedLock.NOT_FOUND}
+    elseif redis.call("get", KEYS[1]) == ARGV[1] then
+        redis.call("del", KEYS[1])
+        return {ReleasedLock.RELEASED}
     else
-        return 0
+        return {ReleasedLock.UNMATCH}
     end
     """
 
@@ -83,10 +93,10 @@ class RedisDistLock(DistLock):
 
     @override
     async def release(self):
-        released = await self.client.eval(
+        release_result = await self.client.eval(
             self.RELEASE_LOCK_SCRIPT, 1, self.resource_name, self.lock_id
         )  # type: ignore
-        if released:
+        if release_result in (ReleasedLock.RELEASED, ReleasedLock.NOT_FOUND):
             try:
                 RedisDistLock._EVENTS.pop(self.resource_name).set()
             except KeyError:

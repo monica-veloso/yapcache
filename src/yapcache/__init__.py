@@ -1,17 +1,8 @@
-import sys
 import asyncio
 from dataclasses import dataclass
 from functools import wraps
 from typing import Generic
-
-if sys.version_info >= (3, 11):
-    from enum import StrEnum
-else:
-    from enum import Enum
-
-    class StrEnum(str, Enum):
-        def __str__(self):
-            return str(self.value)
+from compat import StrEnum
 
 
 from typing_extensions import (
