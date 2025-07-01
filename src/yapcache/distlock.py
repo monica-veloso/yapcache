@@ -1,24 +1,15 @@
-import sys
 import asyncio
 import uuid
 
 from redis.asyncio import Redis
 from typing_extensions import override
-
-if sys.version_info >= (3, 11):
-    from enum import StrEnum
-else:
-    from enum import Enum
-
-    class StrEnum(str, Enum):
-        def __str__(self):
-            return str(self.value)
+from compat import StrEnum
 
 
 class ReleasedLock(StrEnum):
-    RELEASED = 'released'
-    NOT_FOUND = 'not_found'
-    UNMATCH = 'unmatch'
+    RELEASED = "released"
+    NOT_FOUND = "not_found"
+    UNMATCH = "unmatch"
 
 
 class DistLock:
