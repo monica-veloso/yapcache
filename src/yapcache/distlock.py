@@ -3,7 +3,8 @@ import uuid
 
 from redis.asyncio import Redis
 from typing_extensions import override
-from compat import StrEnum
+
+from yapcache.compat import StrEnum
 
 
 class ReleasedLock(StrEnum):
