@@ -2,7 +2,6 @@ import asyncio
 from dataclasses import dataclass
 from functools import wraps
 from typing import Generic
-from compat import StrEnum
 
 
 from typing_extensions import (
@@ -18,6 +17,7 @@ from typing_extensions import (
 
 from yapcache.cache_item import CacheItem
 from yapcache.caches import Cache
+from yapcache.compat import StrEnum
 from yapcache.distlock import DistLock, NullLock
 
 P = ParamSpec("P")
