@@ -4,8 +4,6 @@ import uuid
 from redis.asyncio import Redis
 from typing_extensions import override
 
-from yapcache.compat import StrEnum
-
 
 class DistLock:
     async def __aenter__(self):
@@ -30,7 +28,7 @@ class NullLock(DistLock):
 
 
 class RedisDistLock(DistLock):
-    RELEASE_LOCK_SCRIPT = f"""
+    RELEASE_LOCK_SCRIPT = """
     if redis.call("get", KEYS[1]) == false then
         return "not_found"
     elseif redis.call("get", KEYS[1]) == ARGV[1] then
