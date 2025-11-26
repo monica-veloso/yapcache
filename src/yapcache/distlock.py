@@ -7,12 +7,6 @@ from typing_extensions import override
 from yapcache.compat import StrEnum
 
 
-class ReleasedLock(StrEnum):
-    RELEASED = "released"
-    NOT_FOUND = "not_found"
-    UNMATCH = "unmatch"
-
-
 class DistLock:
     async def __aenter__(self):
         return await self.acquire()
@@ -38,12 +32,12 @@ class NullLock(DistLock):
 class RedisDistLock(DistLock):
     RELEASE_LOCK_SCRIPT = f"""
     if redis.call("get", KEYS[1]) == false then
-        return {ReleasedLock.NOT_FOUND}
+        return "not_found"
     elseif redis.call("get", KEYS[1]) == ARGV[1] then
         redis.call("del", KEYS[1])
-        return {ReleasedLock.RELEASED}
+        return "released"
     else
-        return {ReleasedLock.UNMATCH}
+        return "unmatch"
     end
     """
 
@@ -97,7 +91,7 @@ class RedisDistLock(DistLock):
         release_result = await self.client.eval(
             self.RELEASE_LOCK_SCRIPT, 1, self.resource_name, self.lock_id
         )  # type: ignore
-        if release_result in (ReleasedLock.RELEASED, ReleasedLock.NOT_FOUND):
+        if release_result in ("released", "not_found"):
             try:
                 RedisDistLock._EVENTS.pop(self.resource_name).set()
             except KeyError:
