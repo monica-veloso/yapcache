@@ -80,3 +80,10 @@ class MultiLayerCache(Cache):
         await asyncio.gather(
             *(cache.set(key, value, ttl, best_before) for cache in self.caches),
         )
+
+    @override
+    async def delete(self, key: str) -> bool:
+        key = self._key(key)
+        return any(
+            await asyncio.gather(*(cache.delete(key) for cache in self.caches))
+        )
