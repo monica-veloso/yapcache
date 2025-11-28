@@ -29,13 +29,14 @@ class NullLock(DistLock):
 
 class RedisDistLock(DistLock):
     RELEASE_LOCK_SCRIPT = """
-    if redis.call("get", KEYS[1]) == false then
-        return "not_found"
-    elseif redis.call("get", KEYS[1]) == ARGV[1] then
-        redis.call("del", KEYS[1])
-        return "released"
+    local val = redis.call("get", KEYS[1])
+
+    if not val then
+        return 1
+    elseif val == ARGV[1] then
+        return redis.call("del", KEYS[1])
     else
-        return "unmatch"
+        return 0
     end
     """
 
@@ -86,10 +87,10 @@ class RedisDistLock(DistLock):
 
     @override
     async def release(self):
-        release_result = await self.client.eval(
+        released = await self.client.eval(
             self.RELEASE_LOCK_SCRIPT, 1, self.resource_name, self.lock_id
         )  # type: ignore
-        if release_result in ("released", "not_found"):
+        if released:
             try:
                 RedisDistLock._EVENTS.pop(self.resource_name).set()
             except KeyError:
