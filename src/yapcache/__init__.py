@@ -55,7 +55,8 @@ def memoize(
         async def wrapper(*args, **kwargs):
             key = cache_key(*args, **kwargs)
 
-            async def _call_with_lock():
+            async def _call_with_lock(*args, **kwargs):
+                key = cache_key(*args, **kwargs)
                 async with lock(key + ":lock"):
                     found = await cache.get(
                         key
@@ -80,7 +81,7 @@ def memoize(
             if isinstance(found, CacheItem):
                 status = CacheStatus.HIT
                 if found.is_stale and key not in update_tasks:
-                    task = asyncio.create_task(_call_with_lock())
+                    task = asyncio.create_task(_call_with_lock(*args, **kwargs))
                     update_tasks[key] = task  # TODO: acho que tem problema
                     task.add_done_callback(lambda _: update_tasks.pop(key))
                     status = CacheStatus.STALE
